@@ -8,6 +8,8 @@
 // Function prototypes
 void callAddKernel(int test_duration, size_t memory_size);
 void callSubtractKernel(int test_duration, size_t memory_size);
+void callDivideKernel(int test_duration, size_t memory_size);
+void callMultiplyKernel(int test_duration, size_t memory_size);
 
 // Function to parse command-line arguments and store values in references
 void parseArguments(int argc, char* argv[], std::string& workload, std::string& time, size_t& memory_size) {
@@ -30,7 +32,7 @@ void parseArguments(int argc, char* argv[], std::string& workload, std::string& 
 int main(int argc, char* argv[]) { 
     std::string workload = "all";
     std::string time = "60";
-    size_t memory_size = 1048576; // We are targetting 1MB by default (1024 x 1024)
+    size_t memory_size = 128 * 1024 * 1024; // We are targetting 10MB by default (1024 x 1024)
 
     parseArguments(argc, argv, workload, time, memory_size);
 
@@ -38,10 +40,19 @@ int main(int argc, char* argv[]) {
     int test_duration = std::stoi(time);
 
     if (workload == "all") {
-        callAddKernel(test_duration, ceil(memory_size/2));
-	callSubtractKernel(test_duration, ceil(memory_size/2));
+	int num_workloads = 4;
+        callAddKernel(ceil(test_duration/num_workloads), memory_size);
+	callSubtractKernel(ceil(test_duration/num_workloads), memory_size);
+	callMultiplyKernel(ceil(test_duration/num_workloads), memory_size);
+	callDivideKernel(ceil(test_duration/num_workloads), memory_size);
     } else if (workload == "add") {
 	callAddKernel(test_duration, memory_size);
+    } else if (workload == "subtract") {
+        callSubtractKernel(test_duration, memory_size);
+    } else if (workload == "multiply") {
+        callMultiplyKernel(test_duration, memory_size);
+    } else if (workload == "divide") {
+        callDivideKernel(test_duration, memory_size);
     } else {
         std::cout << "No valid workload specified or workload is not supported." << std::endl;
     }

@@ -1,11 +1,12 @@
 #include <hip/hip_runtime.h>
 #include <iostream>
 #include <chrono>
+#include <random>  // Include the random library
 
 __global__ void subtractKernel(float* a, float* b, float* c, size_t size) {
     int idx = threadIdx.x + blockDim.x * blockIdx.x;
     if (idx < size) {
-        c[idx] = a[idx] + b[idx];
+        c[idx] = a[idx] - b[idx];
     }
 }
 
@@ -19,10 +20,20 @@ void callSubtractKernel(int test_duration, size_t memory_size) {
     float *h_c = new float[num_elements];
     float *d_a, *d_b, *d_c;
 
+    // Initialize random number generator
+    /*std::random_device rd;  // Seed for random number generator
+    std::mt19937 gen(rd()); // Mersenne Twister RNG
+    std::uniform_real_distribution<float> dis(0.0f, 1.0f); // Uniform distribution [0, 1)
+    */
+
     // Initialize input data
     for (size_t i = 0; i < num_elements; ++i) {
-        h_a[i] = 1.0f;
-        h_b[i] = 2.0f;
+        //h_a[i] = 1.0f;
+        //h_b[i] = 2.0f;	
+	//h_a[i] = dis(gen);  // Assign random float to h_a[i]
+        //h_b[i] = dis(gen);  // Assign random float to h_b[i]
+	h_a[i] = 0xDEADBEEF;
+        h_b[i] = 0xDEADBEEF;
     }
 
     hipMalloc(&d_a, bytes);
@@ -66,7 +77,7 @@ void callSubtractKernel(int test_duration, size_t memory_size) {
     }
 
     float average_bandwidth = (bandwidth/count); // GB/s
-    std::cout << "Average bandwidth: " << average_bandwidth << " GB/s" << std::endl;
+    std::cout << "Average bandwidth for Subtract: " << average_bandwidth << " GB/s" << std::endl;
 
     // Cleanup
     delete[] h_a;
