@@ -38,7 +38,9 @@ void callAddKernel(int* d_a, int* d_b, int* d_c, int test_duration, size_t memor
         hipEventSynchronize(stop);
         hipEventElapsedTime(&elapsedTime, start, stop);
         
-        // Calculate bandwidth for this iteration
+        /* Calculate bandwidth for this iteration */
+	// Multiplying by 2 in bandwidth calculations ensures that you account for the
+	// total amount of data transferred, considering both the reads and writes during operations.
         bandwidth += (bytes * 2.0f) / (elapsedTime / 1000.0f) / (1024.0f * 1024.0f * 1024.0f); // in GB/s
         total_bytes += bytes;
         //#std::cout << "bandwidth: " << bandwidth << std::endl;
