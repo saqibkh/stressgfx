@@ -1,0 +1,2 @@
+# Ignore all object files created by compiling c++ files
+*.o
