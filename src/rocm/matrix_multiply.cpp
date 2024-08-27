@@ -3,7 +3,7 @@
 #include <chrono>
 #include <random>  // Include the random library
 
-__global__ void matrixMultiply(int* a, int* b, int* c, size_t size) {
+__global__ void matrixMultiplyKernel(int* a, int* b, int* c, size_t size) {
     int row = threadIdx.y + blockIdx.y * blockDim.y;
     int col = threadIdx.x + blockIdx.x * blockDim.x;
     if (row < size && col < size) {
@@ -21,13 +21,13 @@ void callMatrixMultiplyKernel(int* d_a, int* d_b, int* d_c, int test_duration, s
     size_t bytes = memory_size;
     
     // Kernel configuration
-    MATRIX_SIZE = sqrt(memory_size) 
+    size_t MATRIX_SIZE = 1024; //sqrt(memory_size) 
     std::cout << "Running matrix multiplication kernel..." << std::endl;
     dim3 threadsPerBlock(16, 16);
     dim3 blocksPerGrid((MATRIX_SIZE + 15) / 16, (MATRIX_SIZE + 15) / 16);
 
-    int threadsPerBlock = 256;
-    int blocksPerGrid = (num_elements + threadsPerBlock - 1) / threadsPerBlock;
+    //int threadsPerBlock = 256;
+    //int blocksPerGrid = (num_elements + threadsPerBlock - 1) / threadsPerBlock;
 
     auto start_time = std::chrono::high_resolution_clock::now();
     auto end_time = start_time;
@@ -43,7 +43,7 @@ void callMatrixMultiplyKernel(int* d_a, int* d_b, int* d_c, int test_duration, s
         hipEventCreate(&stop);
         
         hipEventRecord(start);
-        addKernel<<<blocksPerGrid, threadsPerBlock>>>(d_a, d_b, d_c, num_elements);
+        matrixMultiplyKernel<<<blocksPerGrid, threadsPerBlock>>>(d_a, d_b, d_c, num_elements);
         hipEventRecord(stop);
         hipEventSynchronize(stop);
         hipEventElapsedTime(&elapsedTime, start, stop);

@@ -6,8 +6,8 @@ TARGET = run
 
 all: $(TARGET)
 
-$(TARGET): main.o add.o subtract.o multiply.o divide.o read.o write.o
-	$(CC) $(CFLAGS) -o $(TARGET) main.o add.o subtract.o multiply.o divide.o read.o write.o
+$(TARGET): main.o add.o subtract.o multiply.o divide.o read.o write.o matrix_multiply.o 
+	$(CC) $(CFLAGS) -o $(TARGET) main.o add.o subtract.o multiply.o divide.o read.o write.o matrix_multiply.o
 
 main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp
@@ -29,6 +29,9 @@ read.o: read.cpp
 
 write.o: write.cpp
 	$(CC) $(CFLAGS) -c write.cpp
+
+matrix_multiply.o: matrix_multiply.cpp
+	$(CC) $(CFLAGS) -c matrix_multiply.cpp
 
 clean:
 	rm -f *.o $(TARGET)

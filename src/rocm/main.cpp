@@ -12,6 +12,7 @@ void callDivideKernel(int* d_a, int* d_b, int* d_c, int test_duration, size_t me
 void callMultiplyKernel(int* d_a, int* d_b, int* d_c, int test_duration, size_t memory_size);
 void callReadKernel(int* d_a, int test_duration, size_t memory_size);
 void callWriteKernel(int* d_a, int* d_c, int test_duration, size_t memory_size);
+void callMatrixMultiplyKernel(int* d_a, int* d_b, int* d_c, int test_duration, size_t memory_size);
 
 // Function to parse command-line arguments and store values in references
 void parseArguments(int argc, char* argv[], std::string& workload, std::string& time, size_t& memory_size) {
@@ -92,6 +93,8 @@ int main(int argc, char* argv[]) {
         callReadKernel(d_a, test_duration, memory_size);
     } else if (workload == "write") {
         callWriteKernel(d_a, d_c, test_duration, memory_size);
+    } else if (workload == "matrixmultiply") {
+        callMatrixMultiplyKernel(d_a, d_b, d_c, test_duration, memory_size);
     } else {
         std::cout << "No valid workload specified or workload is not supported." << std::endl;
     }
