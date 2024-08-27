@@ -6,8 +6,8 @@ TARGET = run
 
 all: $(TARGET)
 
-$(TARGET): main.o add.o subtract.o multiply.o divide.o
-	$(CC) $(CFLAGS) -o $(TARGET) main.o add.o subtract.o multiply.o divide.o
+$(TARGET): main.o add.o subtract.o multiply.o divide.o read.o write.o
+	$(CC) $(CFLAGS) -o $(TARGET) main.o add.o subtract.o multiply.o divide.o read.o write.o
 
 main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp
@@ -23,6 +23,12 @@ multiply.o: multiply.cpp
 	
 divide.o: divide.cpp
 	$(CC) $(CFLAGS) -c divide.cpp
+
+read.o: read.cpp
+	$(CC) $(CFLAGS) -c read.cpp
+
+write.o: write.cpp
+	$(CC) $(CFLAGS) -c write.cpp
 
 clean:
 	rm -f *.o $(TARGET)

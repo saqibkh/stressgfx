@@ -10,6 +10,8 @@ void callAddKernel(int* d_a, int* d_b, int* d_c, int test_duration, size_t memor
 void callSubtractKernel(int* d_a, int* d_b, int* d_c, int test_duration, size_t memory_size);
 void callDivideKernel(int* d_a, int* d_b, int* d_c, int test_duration, size_t memory_size);
 void callMultiplyKernel(int* d_a, int* d_b, int* d_c, int test_duration, size_t memory_size);
+void callReadKernel(int* d_a, int test_duration, size_t memory_size);
+void callWriteKernel(int* d_a, int* d_c, int test_duration, size_t memory_size);
 
 // Function to parse command-line arguments and store values in references
 void parseArguments(int argc, char* argv[], std::string& workload, std::string& time, size_t& memory_size) {
@@ -71,11 +73,13 @@ int main(int argc, char* argv[]) {
 
 
     if (workload == "all") {
-	int num_workloads = 4;
+	int num_workloads = 6;
         callAddKernel(d_a, d_b, d_c, ceil(test_duration/num_workloads), memory_size);
 	callSubtractKernel(d_a, d_b, d_c, ceil(test_duration/num_workloads), memory_size);
 	callMultiplyKernel(d_a, d_b, d_c, ceil(test_duration/num_workloads), memory_size);
 	callDivideKernel(d_a, d_b, d_c, ceil(test_duration/num_workloads), memory_size);
+	callReadKernel(d_a, ceil(test_duration/num_workloads), memory_size);
+	callWriteKernel(d_a, d_c, ceil(test_duration/num_workloads), memory_size);
     } else if (workload == "add") {
     	callAddKernel(d_a, d_b, d_c, test_duration, memory_size);
     } else if (workload == "subtract") {
@@ -84,6 +88,10 @@ int main(int argc, char* argv[]) {
         callMultiplyKernel(d_a, d_b, d_c, test_duration, memory_size);
     } else if (workload == "divide") {
         callDivideKernel(d_a, d_b, d_c, test_duration, memory_size);
+    } else if (workload == "read") {
+        callReadKernel(d_a, test_duration, memory_size);
+    } else if (workload == "write") {
+        callWriteKernel(d_a, d_c, test_duration, memory_size);
     } else {
         std::cout << "No valid workload specified or workload is not supported." << std::endl;
     }
