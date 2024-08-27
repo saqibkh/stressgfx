@@ -43,9 +43,6 @@ void callAddKernel(int* d_a, int* d_b, int* d_c, int test_duration, size_t memor
 	// total amount of data transferred, considering both the reads and writes during operations.
         bandwidth += (bytes * 2.0f) / (elapsedTime / 1000.0f) / (1024.0f * 1024.0f * 1024.0f); // in GB/s
         total_bytes += bytes;
-        //#std::cout << "bandwidth: " << bandwidth << std::endl;
-	//std::cout << "total_bytes: " << total_bytes << std::endl;
-
         count++;
         
         hipEventDestroy(start);
