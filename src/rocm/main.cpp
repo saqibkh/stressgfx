@@ -34,6 +34,7 @@ int main(int argc, char* argv[]) {
     std::string time = "60";
     size_t memory_size = 128 * 1024 * 1024; // We are targetting 10MB by default (1024 x 1024)
 
+    // Parse user provided user arguments; and set default variables if not provided
     parseArguments(argc, argv, workload, time, memory_size);
 
     // Convert string inputs to appropriate types
