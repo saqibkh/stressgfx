@@ -25,7 +25,7 @@ void printUsage() {
               << "Options:\n"
               << "  -h,  --help            Show this help message and exit\n"
               << "  -w,  --workload <>     Specify workload type (bandwidth, stress, coherency). Default is 'all'.\n"
-	      << "  -m,  --memory   <>     Specifies the amount of memory used for each test.\n"
+	      << "  -m,  --memory   <>     Specifies the amount of memory used for each test in bytes.\n"
 	      << "  -c,  --check           Specifies a bool variable if we need to check for miscompares or not. Default is 'False'.\n"
               << "  -t,  --time     <>     Specify the duration of the test in seconds. Default is '60'.\n"
               << "  -s,  --subtests <>     Subtests are defined seperately for each workload. Default we run 'all'.\n"

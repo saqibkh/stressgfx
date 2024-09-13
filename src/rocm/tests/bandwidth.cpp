@@ -89,19 +89,19 @@ void runBandwidthTest(int argc, char* argv[]) {
     if (subtest == "add") {
         callAddKernel(d_a, d_b, d_c, memory_size, test_duration);
     } else if (subtest == "subtract"){
-        int x = 1;
+	std::cout << "This option is still under construction\n";
     } else if (subtest == "multiply"){
-        int x = 1;
+	std::cout << "This option is still under construction\n";
     } else if (subtest == "divide"){
-        int x = 1;
+	std::cout << "This option is still under construction\n";
     } else if (subtest == "read"){
-        int x = 1;
+	std::cout << "This option is still under construction\n";
     } else if (subtest == "write"){
-        int x = 1;
+	std::cout << "This option is still under construction\n";
     } else if (subtest == "matrix_multiply"){
-        int x = 1;
+	std::cout << "This option is still under construction\n";
     } else if (subtest == "all"){
-        int x = 1;
+	std::cout << "This option is still under construction\n";
     }
 
     // Cleanup
