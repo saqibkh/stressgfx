@@ -15,7 +15,7 @@ std::string boolToString(bool value) {
 }
 
 // Function to parse command-line arguments and store values in references
-void parseArguments(int argc, char* argv[], std::string& subtest, std::string& time, size_t& memory_size, bool* enableVerify) {
+void parseArguments(int argc, char* argv[], std::string& subtest, std::string& time, size_t& memory_size) {
 
     for (int i = 1; i < argc; ++i) {
         if ((strcmp(argv[i], "--time") == 0 || strcmp(argv[i], "-t") == 0) && i + 1 < argc) {
@@ -24,8 +24,6 @@ void parseArguments(int argc, char* argv[], std::string& subtest, std::string& t
 	    memory_size = std::stoull(argv[++i]); // Store the value of --memory_size
 	} else if ((strcmp(argv[i], "--subtest") == 0 || strcmp(argv[i], "-s") == 0) && i + 1 < argc) {
             subtest = argv[++i]; // Store the value of --sibtest
-	} else if ((strcmp(argv[i], "--check") == 0 || strcmp(argv[i], "-c") == 0) && i + 1 < argc) {
-            *enableVerify = true;
 	}
     }
 
@@ -39,20 +37,23 @@ void parseArguments(int argc, char* argv[], std::string& subtest, std::string& t
     std::cout << "VERBOSE: " << boolToString(VERBOSE) << std::endl;
     std::cout << "CHECK_RESULT: " << boolToString(CHECK_RESULT) << std::endl;
     std::cout << "EXIT_ON_MISCOMPARE: " << boolToString(EXIT_ON_MISCOMPARE) << std::endl;
+    std::cout << "HOST_PINNED_MEMORY: " << boolToString(HOST_PINNED_MEMORY) << std::endl;
     std::cout << "======================================================================\n";
 }
 
-void runBandwidthTest(int argc, char* argv[]) {
+int runBandwidthTest(int argc, char* argv[]) {
     std::cout << "\n\nStarting to performing bandwidth test!\n";
     
+    // This variable will store the fail count
+    int l_fail = 0;
+
     // Setting Default args
     std::string subtest = "all";
     std::string time = "60";
     size_t memory_size = 256 * 1024 * 1024; // We are targetting 10MB by default (1024 x 1024)
-    bool enableVerify = false;
 
     // Parse user provided user arguments; and set default variables if not provided
-    parseArguments(argc, argv, subtest, time, memory_size, &enableVerify);
+    parseArguments(argc, argv, subtest, time, memory_size);
 
     // Convert string inputs to appropriate types
     int test_duration = std::stoi(time);
@@ -79,15 +80,32 @@ void runBandwidthTest(int argc, char* argv[]) {
 	h_c[i] = min_val + std::rand() % (max_val - min_val + 1);
     }
 
-    hipMalloc(&d_a, bytes);
-    hipMalloc(&d_b, bytes);
-    hipMalloc(&d_c, bytes);
+    if(HOST_PINNED_MEMORY == true) {
+	/* hipHostMalloc: Allocates pinned host memory, which is mapped to the GPU 
+	 * and can be used for more efficient data transfer between host and device.
+
+	Benefit: Uncached Memory Allocation (Using HIP API): In HIP/ROCm, you can 
+	allocate memory that bypasses certain cache hierarchies by using pinned 
+	memory (hipHostMalloc with hipHostMallocNonCoherent flag). This flag might
+	bypass caching and can be useful in cases where you want direct access to 
+	host memory without it being cached.
+
+	*/
+        hipHostMalloc((void**)&d_a, bytes, hipHostMallocNonCoherent);
+        hipHostMalloc((void**)&d_b, bytes, hipHostMallocNonCoherent);
+        hipHostMalloc((void**)&d_c, bytes, hipHostMallocNonCoherent);
+    } else {
+        hipMalloc(&d_a, bytes);
+        hipMalloc(&d_b, bytes);
+        hipMalloc(&d_c, bytes);
+    }
+
     hipMemcpy(d_a, h_a, bytes, hipMemcpyHostToDevice);
     hipMemcpy(d_b, h_b, bytes, hipMemcpyHostToDevice);
     hipMemcpy(d_c, h_c, bytes, hipMemcpyHostToDevice);
 
     if (subtest == "add") {
-        callAddKernel(d_a, d_b, d_c, memory_size, test_duration);
+        l_fail += callAddKernel(d_a, d_b, d_c, memory_size, test_duration);
     } else if (subtest == "subtract"){
 	std::cout << "This option is still under construction\n";
     } else if (subtest == "multiply"){
@@ -111,4 +129,6 @@ void runBandwidthTest(int argc, char* argv[]) {
     hipFree(d_a);
     hipFree(d_b);
     hipFree(d_c);
+
+    return l_fail;
 }

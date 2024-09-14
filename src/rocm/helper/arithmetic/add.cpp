@@ -1,32 +1,67 @@
 #include <hip/hip_runtime.h>
 #include <iostream>
 #include <chrono>
-#include <random>  // Include the random library
+#include <random>
+#include <fstream>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <cstdint>
 
 #include "../../globals.h"
 #include "add.h"
 
 __global__ void addKernel(int* a, int* b, int* c, size_t size) {
     int idx = threadIdx.x + blockDim.x * blockIdx.x;
-    if (idx < size) {
+    if (idx < (int)size) {
         c[idx] = a[idx] + b[idx];
     }
 }
 
-__global__ void checkMiscompareKernel(const int* a, const int* b, const int* c, bool* miscompareFlag, size_t N) {
+__global__ void checkMiscompareKernel(const int* a, const int* b, const int* c, int* miscompareIndex, size_t N) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < N) {
+    if (idx < (int)N) {
         if (a[idx] + b[idx] != c[idx]) {
-            *miscompareFlag = true;  // Set the flag to true if any mismatch is found
+            *miscompareIndex = idx;  // Set the index of the miscompare
         }
     }
 }
 
+// Function to get the physical address from the virtual address using /proc/self/pagemap
+uintptr_t getPhysicalAddress(uintptr_t virtualAddr) {
+    uintptr_t physicalAddr = 0;
+    uint64_t value;
+
+    // Open the pagemap file
+    std::ifstream pagemap("/proc/self/pagemap", std::ios::binary);
+    if (!pagemap) {
+        std::cerr << "Failed to open /proc/self/pagemap" << std::endl;
+        return physicalAddr;
+    }
+
+    // Read the entry corresponding to the virtual address
+    uint64_t offset = (virtualAddr / sysconf(_SC_PAGESIZE)) * sizeof(value);
+    pagemap.seekg(offset, pagemap.beg);
+    pagemap.read(reinterpret_cast<char*>(&value), sizeof(value));
+    
+    if (value & (1ULL << 63)) { // Page present flag
+        physicalAddr = (value & ((1ULL << 55) - 1)) * sysconf(_SC_PAGESIZE);
+        physicalAddr |= (virtualAddr & (sysconf(_SC_PAGESIZE) - 1)); // Add the page offset
+    } else {
+        std::cerr << "Page not present in memory" << std::endl;
+    }
+    
+    return physicalAddr;
+}
+
 int callAddKernel(int* d_a, int* d_b, int* d_c, size_t memory_size, int testDuration) {
+
+    // This variable will store the fail count
+    int l_fail = 0;
 
     // Define and allocate memory
     size_t num_elements = memory_size / sizeof(int);
-    size_t bytes = memory_size;
+    //size_t bytes = memory_size;
 
     // Define thread hierarchy
     int threadsPerBlock = 256;
@@ -38,30 +73,49 @@ int callAddKernel(int* d_a, int* d_b, int* d_c, size_t memory_size, int testDura
     int iterations = 0;
     
     // These variables will only be used for checking for miscompares
-    bool* d_miscompareFlag;
-    bool h_miscompareFlag = false;
-    hipMalloc(&d_miscompareFlag, sizeof(bool));
-    hipMemcpy(d_miscompareFlag, &h_miscompareFlag, sizeof(bool), hipMemcpyHostToDevice);
+    int h_miscompareIndex = -1;
+    int* d_miscompareIndex;
+    // Allocate memory for miscompare index on device
+    hipMalloc(&d_miscompareIndex, sizeof(int));
+    hipMemcpy(d_miscompareIndex, &h_miscompareIndex, sizeof(int), hipMemcpyHostToDevice);
 
     // Run the kernel for the specified test duration
     while (std::chrono::duration<double>(end - start).count() < testDuration){
         hipLaunchKernelGGL(addKernel, dim3(blocksPerGrid), dim3(threadsPerBlock), 0, 0, d_a, d_b, d_c, num_elements);
         hipDeviceSynchronize();
 
-	// Launch kernel to compare results on the GPU
-	hipLaunchKernelGGL(checkMiscompareKernel, dim3(blocksPerGrid), dim3(threadsPerBlock), 0, 0, d_a, d_b, d_c, d_miscompareFlag, num_elements);
-        hipDeviceSynchronize();	
+	if(CHECK_RESULT == true){
+            // Launch kernel to compare results on the GPU
+	    hipLaunchKernelGGL(checkMiscompareKernel, 
+			    dim3(blocksPerGrid), 
+			    dim3(threadsPerBlock), 
+			    0, 0, d_a, d_b, d_c, d_miscompareIndex, num_elements);
+            hipDeviceSynchronize();
+	    // Copy miscompare index back to host
+            hipMemcpy(&h_miscompareIndex, d_miscompareIndex, sizeof(int), hipMemcpyDeviceToHost);
 
-	// Copy result back to host
-	if(CHECK_RESULT){
-            hipMemcpy(&h_miscompareFlag, d_miscompareFlag, sizeof(bool), hipMemcpyDeviceToHost);
-            if (h_miscompareFlag) {
-                std::cout << "Miscompare detected!" << std::endl;
-            }
-	} 
+            if (h_miscompareIndex != -1) {
+                // Miscompare detected
+	        std::cout << "Miscompare detected at index " << h_miscompareIndex << std::endl;
+	        // Calculate virtual address
+                uintptr_t virtualAddr = reinterpret_cast<uintptr_t>(&d_c[h_miscompareIndex]);
+	        std::cout << "Virtual address: " << std::hex << virtualAddr << std::endl;
 
-        end = std::chrono::high_resolution_clock::now();
-        iterations++;
+	        // Get the physical address
+	        uintptr_t physicalAddr = getPhysicalAddress(virtualAddr);
+                if (physicalAddr != 0) {
+		    std::cout << "Physical address: " << std::hex << physicalAddr << std::endl;
+	        }
+
+		l_fail += 1;
+		
+		if(EXIT_ON_MISCOMPARE==true){
+		    return l_fail;
+		}
+	    }
+        }
+            end = std::chrono::high_resolution_clock::now();
+            iterations++;
     }
 
     // Calculate elapsed time
@@ -79,5 +133,5 @@ int callAddKernel(int* d_a, int* d_b, int* d_c, size_t memory_size, int testDura
     std::cout << "Elapsed Time: " << elapsed_time << " seconds" << std::endl;
     std::cout << "Total Data Transferred: " << total_data / (1 << 30) << " GB" << std::endl;
     std::cout << "Bandwidth: " << bandwidth << " GB/s" << std::endl;
-    return true;
+    return l_fail;
 }

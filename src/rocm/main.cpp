@@ -14,6 +14,7 @@
 bool VERBOSE = false;
 bool EXIT_ON_MISCOMPARE = false;
 bool CHECK_RESULT = false;
+bool HOST_PINNED_MEMORY = false;
 
 // Function to convert bool to string "True" or "False"
 std::string bool2String(bool value) {
@@ -30,12 +31,16 @@ void printUsage() {
               << "  -t,  --time     <>     Specify the duration of the test in seconds. Default is '60'.\n"
               << "  -s,  --subtests <>     Subtests are defined seperately for each workload. Default we run 'all'.\n"
 	      << "  -v,  --verbose         Enables verbose. Default is set to `False`.\n"
-	      << "  --exit_on_miscompare   Exits test in case of a miscompare. Only available with --check.\n";
+	      << "  --exit_on_miscompare   Exits test in case of a miscompare. Only available with --check.\n"
+	      << "  --hostpinnedmemory     Allocates pinned host memory, which is mapped to GPU and can be used for more efficient data transfer between host and device.\n";
 }
 
 
 int main(int argc, char* argv[]) {
     
+    // This variable will store the fail count
+    int l_fail = 0;
+
     std::string workload;
     for (int i = 1; i < argc; ++i) {
 	if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
@@ -49,6 +54,8 @@ int main(int argc, char* argv[]) {
             VERBOSE = true;
 	} else if (strcmp(argv[i], "--exit_on_miscompare") == 0) {
             EXIT_ON_MISCOMPARE = true;
+	} else if (strcmp(argv[i], "--hostpinnedmemory") == 0) {
+            HOST_PINNED_MEMORY = true;
 	}
     }
 
@@ -59,7 +66,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (workload == "bandwidth") {
-        runBandwidthTest(argc, argv);  // Function defined in bandwidth.cpp
+        l_fail += runBandwidthTest(argc, argv);  // Function defined in bandwidth.cpp
     } else if (workload == "stress") {
         runStressTest(argc, argv);  // Function defined in stress.cpp
     } else if (workload == "coherency") {
@@ -67,9 +74,9 @@ int main(int argc, char* argv[]) {
     } else {
         std::cout << "Invalid workload specified.\n";
         printUsage();
-        return 1;
+        return -1;
     }
 
-    return 0;
+    return l_fail;
 }
 
