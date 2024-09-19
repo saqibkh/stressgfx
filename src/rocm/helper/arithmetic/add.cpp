@@ -33,6 +33,8 @@ __global__ void checkMiscompareAddKernel(const int* a, const int* b, const int* 
 
 int callAddKernel(int* d_a, int* d_b, int* d_c, size_t memory_size, int testDuration) {
 
+    std::cout << "============= TEST RESULTS FOR ADD =============" << std::endl;
+
     // This variable will store the fail count
     int l_fail = 0;
 
@@ -79,12 +81,13 @@ int callAddKernel(int* d_a, int* d_b, int* d_c, size_t memory_size, int testDura
 	    // Copy miscompare index back to host
             hipMemcpy(&h_miscompareIndex, d_miscompareIndex, sizeof(int), hipMemcpyDeviceToHost);
 
-	    // Copy actual and expected value back to host
-	    hipMemcpy(&h_actualValue, d_actualValue, sizeof(int), hipMemcpyDeviceToHost);
-            hipMemcpy(&h_expectedValue, d_expectedValue, sizeof(int), hipMemcpyDeviceToHost);
-
             if (h_miscompareIndex != -1) {
                 // Miscompare detected
+                std::cout << "Miscompare detected at index " << h_miscompareIndex << std::endl;
+
+		// Copy actual and expected value back to host
+                hipMemcpy(&h_actualValue, d_actualValue, sizeof(int), hipMemcpyDeviceToHost);
+                hipMemcpy(&h_expectedValue, d_expectedValue, sizeof(int), hipMemcpyDeviceToHost);
 
 	        // Calculate virtual address
                 uintptr_t virtualAddr = reinterpret_cast<uintptr_t>(&d_c[h_miscompareIndex]);
@@ -126,7 +129,6 @@ int callAddKernel(int* d_a, int* d_b, int* d_c, size_t memory_size, int testDura
     // Calculate bandwidth in GB/s
     double bandwidth = total_data / elapsed_time / (1 << 30);
 
-    std::cout << "============= TEST RESULTS FOR ADD =============" << std::endl;
     std::cout << "Test Duration: " << testDuration << " seconds" << std::endl;
     std::cout << "Number of iterations: " << iterations << std::endl;
     std::cout << "Elapsed Time: " << elapsed_time << " seconds" << std::endl;
