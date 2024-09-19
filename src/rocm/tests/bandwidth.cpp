@@ -74,9 +74,6 @@ int runBandwidthTest(int argc, char* argv[]) {
     // Use a fixed seed for deterministic results
     std::mt19937 gen(42); // Fixed seed value (42)
     std::uniform_int_distribution<int> dis(INT_MIN, INT_MAX); // Range from INT_MIN to INT_MAX
-    // Extreme min and max values for int
-    int min_val = std::numeric_limits<int>::min();
-    int max_val = std::numeric_limits<int>::max();
     // Fill the array with signed random integers
     for (size_t i = 0; i < num_elements; ++i) {
         h_a[i] = dis(gen);
@@ -112,7 +109,7 @@ int runBandwidthTest(int argc, char* argv[]) {
     hipMemcpy(d_b, h_b, bytes, hipMemcpyHostToDevice);
     hipMemcpy(d_c, h_c, bytes, hipMemcpyHostToDevice);
 
-    int total_tests = 7;
+    int total_tests = 2;
     if (subtest == "add") {
         l_fail += callAddKernel(d_a, d_b, d_c, memory_size, test_duration);
     } else if (subtest == "subtract"){
