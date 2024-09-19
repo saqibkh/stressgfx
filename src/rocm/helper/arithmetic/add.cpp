@@ -19,11 +19,14 @@ __global__ void addKernel(int* a, int* b, int* c, size_t size) {
     }
 }
 
-__global__ void checkMiscompareAddKernel(const int* a, const int* b, const int* c, int* miscompareIndex, size_t N) {
+__global__ void checkMiscompareAddKernel(const int* a, const int* b, const int* c, int* miscompareIndex, int* actualValue, int* expectedValue, size_t N) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < (int)N) {
-        if (a[idx] + b[idx] != c[idx]) {
+	int result = a[idx] + b[idx];
+        if (result != c[idx]) {
             *miscompareIndex = idx;  // Set the index of the miscompare
+	    *actualValue = c[idx];
+	    *expectedValue = result;
         }
     }
 }
@@ -53,6 +56,14 @@ int callAddKernel(int* d_a, int* d_b, int* d_c, size_t memory_size, int testDura
     hipMalloc(&d_miscompareIndex, sizeof(int));
     hipMemcpy(d_miscompareIndex, &h_miscompareIndex, sizeof(int), hipMemcpyHostToDevice);
 
+    // These variables will store the results to compare
+    int h_expectedValue, h_actualValue;
+    int* d_actualValue;
+    int* d_expectedValue;
+    hipMalloc(&d_actualValue, sizeof(int));
+    hipMalloc(&d_expectedValue, sizeof(int));
+
+
     // Run the kernel for the specified test duration
     while (std::chrono::duration<double>(end - start).count() < testDuration){
         hipLaunchKernelGGL(addKernel, dim3(blocksPerGrid), dim3(threadsPerBlock), 0, 0, d_a, d_b, d_c, num_elements);
@@ -63,23 +74,31 @@ int callAddKernel(int* d_a, int* d_b, int* d_c, size_t memory_size, int testDura
 	    hipLaunchKernelGGL(checkMiscompareAddKernel, 
 			    dim3(blocksPerGrid), 
 			    dim3(threadsPerBlock), 
-			    0, 0, d_a, d_b, d_c, d_miscompareIndex, num_elements);
+			    0, 0, d_a, d_b, d_c, d_miscompareIndex, d_actualValue, d_expectedValue, num_elements);
             hipDeviceSynchronize();
 	    // Copy miscompare index back to host
             hipMemcpy(&h_miscompareIndex, d_miscompareIndex, sizeof(int), hipMemcpyDeviceToHost);
 
+	    // Copy actual and expected value back to host
+	    hipMemcpy(&h_actualValue, d_actualValue, sizeof(int), hipMemcpyDeviceToHost);
+            hipMemcpy(&h_expectedValue, d_expectedValue, sizeof(int), hipMemcpyDeviceToHost);
+
             if (h_miscompareIndex != -1) {
                 // Miscompare detected
-	        std::cout << "Miscompare detected at index " << h_miscompareIndex << std::endl;
+
 	        // Calculate virtual address
                 uintptr_t virtualAddr = reinterpret_cast<uintptr_t>(&d_c[h_miscompareIndex]);
-	        std::cout << "Virtual address: " << std::hex << virtualAddr << std::endl;
 
 	        // Get the physical address
 	        uintptr_t physicalAddr = getPhysicalAddress(virtualAddr);
-                if (physicalAddr != 0) {
-		    std::cout << "Physical address: " << std::hex << physicalAddr << std::endl;
-	        }
+
+		int XOR_RESULT = h_actualValue ^ h_expectedValue;
+                std::cout << "MISCOMPARE --> " << 
+			"Virtual address: " << std::hex << virtualAddr <<
+			", Physical address: " << std::hex << physicalAddr <<
+			", Actual_Value: 0x" << std::hex << std::uppercase << h_actualValue <<
+                        ", Expected_Value: 0x" << std::hex << std::uppercase << h_expectedValue <<
+                        ", XOR: 0x" << std::hex << std::uppercase << XOR_RESULT << std::endl;
 
 		l_fail += 1;
 		
