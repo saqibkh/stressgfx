@@ -22,7 +22,7 @@ __global__ void subtractKernel(int* a, int* b, int* c, size_t size) {
 __global__ void checkMiscompareSubtractKernel(const int* a, const int* b, const int* c, int* miscompareIndex, size_t N) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < (int)N) {
-        if (a[idx] - b[idx] != c[idx]) {
+        if (a[idx] * b[idx] != c[idx]) {
             *miscompareIndex = idx;  // Set the index of the miscompare
         }
     }

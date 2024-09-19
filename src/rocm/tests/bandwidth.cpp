@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <random>
+#include <climits>
 
 #include "bandwidth.h"
 #include "../globals.h"
@@ -69,16 +71,21 @@ int runBandwidthTest(int argc, char* argv[]) {
     int *h_c = new int[num_elements];
     int *d_a, *d_b, *d_c;
 
-    // Seed the random number generator
-    std::srand(42); // Use a fixed seed for reproducibility
+    // Use a fixed seed for deterministic results
+    std::mt19937 gen(42); // Fixed seed value (42)
+    std::uniform_int_distribution<int> dis(INT_MIN, INT_MAX); // Range from INT_MIN to INT_MAX
     // Extreme min and max values for int
     int min_val = std::numeric_limits<int>::min();
     int max_val = std::numeric_limits<int>::max();
     // Fill the array with signed random integers
     for (size_t i = 0; i < num_elements; ++i) {
-        h_a[i] = min_val + std::rand() % (max_val - min_val + 1);
-	h_b[i] = min_val + std::rand() % (max_val - min_val + 1);
-	h_c[i] = min_val + std::rand() % (max_val - min_val + 1);
+        h_a[i] = dis(gen);
+	h_b[i] = dis(gen);
+	h_c[i] = dis(gen);
+
+        //std::cout << "h_a[i]: " << h_a[i] << std::endl;
+	//std::cout << "h_b[i]: " << h_b[i] << std::endl;
+	//std::cout << "h_c[i]: " << h_c[i] << std::endl;
     }
 
     if(HOST_PINNED_MEMORY == true) {
