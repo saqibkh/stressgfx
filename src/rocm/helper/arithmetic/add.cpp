@@ -120,9 +120,14 @@ int callAddKernel(int* d_a, int* d_b, int* d_c, size_t memory_size, int testDura
 
     // Calculate elapsed time
     double elapsed_time = std::chrono::duration<double>(end - start).count();
-    double total_data = static_cast<double>(iterations) * memory_size * 2 * 2; // 2 arrays being read, 1 being written
+    double total_data;
+    if(CHECK_RESULT == true){
+        total_data = static_cast<double>(iterations) * memory_size * 2 * 2; // 2 arrays being read, 1 being written
 									       // This needs to multiplied by 2 as we are
 									       // doing the same when checking results
+    } else {
+        total_data = static_cast<double>(iterations) * memory_size * 2; // 2 arrays being read, 1 being written
+    }
 
     // Calculate bandwidth in GB/s
     double bandwidth = total_data / elapsed_time / (1 << 30);

@@ -104,6 +104,7 @@ int runBandwidthTest(int argc, char* argv[]) {
     hipMemcpy(d_b, h_b, bytes, hipMemcpyHostToDevice);
     hipMemcpy(d_c, h_c, bytes, hipMemcpyHostToDevice);
 
+    int total_tests = 7;
     if (subtest == "add") {
         l_fail += callAddKernel(d_a, d_b, d_c, memory_size, test_duration);
     } else if (subtest == "subtract"){
@@ -119,7 +120,7 @@ int runBandwidthTest(int argc, char* argv[]) {
     } else if (subtest == "matrix_multiply"){
 	std::cout << "This option is still under construction\n";
     } else if (subtest == "all"){
-	std::cout << "This option is still under construction\n";
+        l_fail += callAddKernel(d_a, d_b, d_c, memory_size, test_duration/total_tests);
     }
 
     // Cleanup

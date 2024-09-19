@@ -54,6 +54,7 @@ int main(int argc, char* argv[]) {
             VERBOSE = true;
 	} else if (strcmp(argv[i], "--exit_on_miscompare") == 0) {
             EXIT_ON_MISCOMPARE = true;
+	    CHECK_RESULT = true; // Can't have miscompare without checking first
 	} else if (strcmp(argv[i], "--hostpinnedmemory") == 0) {
             HOST_PINNED_MEMORY = true;
 	}
