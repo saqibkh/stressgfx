@@ -96,11 +96,12 @@ int callSubtractKernel(int* d_a, int* d_b, int* d_c, size_t memory_size, int tes
     double elapsed_time = std::chrono::duration<double>(end - start).count();
     double total_data;
     if(CHECK_RESULT == true){
-        total_data = static_cast<double>(iterations) * memory_size * 2 * 2; // 2 arrays being read, 1 being written
-									       // This needs to multiplied by 2 as we are
-									       // doing the same when checking results
+	// 2 arrays being read, 1 being written
+	// This needs to multiplied by 2 as we are doing the same when checking results
+        total_data = static_cast<double>(iterations) * memory_size * 2 * 2;
     } else {
-        total_data = static_cast<double>(iterations) * memory_size * 2; // 2 arrays being read, 1 being written
+	// 2 arrays being read, 1 being written
+        total_data = static_cast<double>(iterations) * memory_size * 2;
     }
 
     // Calculate bandwidth in GB/s
