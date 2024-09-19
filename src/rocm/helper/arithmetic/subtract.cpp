@@ -10,25 +10,25 @@
 
 #include "../../globals.h"
 #include "../others/getPhysicalAddress.h"
-#include "add.h"
+#include "subtract.h"
 
-__global__ void addKernel(int* a, int* b, int* c, size_t size) {
+__global__ void subtractKernel(int* a, int* b, int* c, size_t size) {
     int idx = threadIdx.x + blockDim.x * blockIdx.x;
     if (idx < (int)size) {
-        c[idx] = a[idx] + b[idx];
+        c[idx] = a[idx] - b[idx];
     }
 }
 
-__global__ void checkMiscompareAddKernel(const int* a, const int* b, const int* c, int* miscompareIndex, size_t N) {
+__global__ void checkMiscompareSubtractKernel(const int* a, const int* b, const int* c, int* miscompareIndex, size_t N) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < (int)N) {
-        if (a[idx] + b[idx] != c[idx]) {
+        if (a[idx] - b[idx] != c[idx]) {
             *miscompareIndex = idx;  // Set the index of the miscompare
         }
     }
 }
 
-int callAddKernel(int* d_a, int* d_b, int* d_c, size_t memory_size, int testDuration) {
+int callSubtractKernel(int* d_a, int* d_b, int* d_c, size_t memory_size, int testDuration) {
 
     // This variable will store the fail count
     int l_fail = 0;
@@ -55,12 +55,12 @@ int callAddKernel(int* d_a, int* d_b, int* d_c, size_t memory_size, int testDura
 
     // Run the kernel for the specified test duration
     while (std::chrono::duration<double>(end - start).count() < testDuration){
-        hipLaunchKernelGGL(addKernel, dim3(blocksPerGrid), dim3(threadsPerBlock), 0, 0, d_a, d_b, d_c, num_elements);
+        hipLaunchKernelGGL(subtractKernel, dim3(blocksPerGrid), dim3(threadsPerBlock), 0, 0, d_a, d_b, d_c, num_elements);
         hipDeviceSynchronize();
 
 	if(CHECK_RESULT == true){
             // Launch kernel to compare results on the GPU
-	    hipLaunchKernelGGL(checkMiscompareAddKernel, 
+	    hipLaunchKernelGGL(checkMiscompareSubtractKernel, 
 			    dim3(blocksPerGrid), 
 			    dim3(threadsPerBlock), 
 			    0, 0, d_a, d_b, d_c, d_miscompareIndex, num_elements);
@@ -106,11 +106,11 @@ int callAddKernel(int* d_a, int* d_b, int* d_c, size_t memory_size, int testDura
     // Calculate bandwidth in GB/s
     double bandwidth = total_data / elapsed_time / (1 << 30);
 
-    std::cout << "============= TEST RESULTS FOR ADD =============" << std::endl;
+    std::cout << "============= TEST RESULTS FOR SUBTRACT =============" << std::endl;
     std::cout << "Test Duration: " << testDuration << " seconds" << std::endl;
     std::cout << "Number of iterations: " << iterations << std::endl;
     std::cout << "Elapsed Time: " << elapsed_time << " seconds" << std::endl;
     std::cout << "Total Data Transferred: " << total_data / (1 << 30) << " GB" << std::endl;
-    std::cout << "Bandwidth (ADD): " << bandwidth << " GB/s\n" << std::endl;
+    std::cout << "Bandwidth (SUBTRACT): " << bandwidth << " GB/s\n" << std::endl;
     return l_fail;
 }

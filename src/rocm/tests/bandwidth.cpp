@@ -8,6 +8,7 @@
 #include "bandwidth.h"
 #include "../globals.h"
 #include "../helper/arithmetic/add.h"  // Include the add.h file
+#include "../helper/arithmetic/subtract.h"
 
 // Function to convert bool to string "True" or "False"
 std::string boolToString(bool value) {
@@ -108,7 +109,7 @@ int runBandwidthTest(int argc, char* argv[]) {
     if (subtest == "add") {
         l_fail += callAddKernel(d_a, d_b, d_c, memory_size, test_duration);
     } else if (subtest == "subtract"){
-	std::cout << "This option is still under construction\n";
+        l_fail += callSubtractKernel(d_a, d_b, d_c, memory_size, test_duration);
     } else if (subtest == "multiply"){
 	std::cout << "This option is still under construction\n";
     } else if (subtest == "divide"){
@@ -121,6 +122,7 @@ int runBandwidthTest(int argc, char* argv[]) {
 	std::cout << "This option is still under construction\n";
     } else if (subtest == "all"){
         l_fail += callAddKernel(d_a, d_b, d_c, memory_size, test_duration/total_tests);
+	l_fail += callSubtractKernel(d_a, d_b, d_c, memory_size, test_duration/total_tests);
     }
 
     // Cleanup
