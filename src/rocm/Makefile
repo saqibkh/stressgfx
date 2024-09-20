@@ -20,7 +20,8 @@ SRC_FILES = $(SRC_DIR)/main.cpp \
 	    $(TESTS_DIR)/coherency.cpp \
 	    $(ARITHMETIC_DIR)/add.cpp \
 	    $(ARITHMETIC_DIR)/subtract.cpp \
-	    $(OTHERS_DIR)/getPhysicalAddress.cpp
+	    $(OTHERS_DIR)/getPhysicalAddress.cpp \
+	    $(OTHERS_DIR)/boolToString.cpp
 
 # Include directories
 INCLUDES = -I$(HOME)/helper/arithmetic \

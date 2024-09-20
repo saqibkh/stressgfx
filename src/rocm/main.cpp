@@ -26,13 +26,14 @@ void printUsage() {
               << "Options:\n"
               << "  -h,  --help            Show this help message and exit\n"
               << "  -w,  --workload <>     Specify workload type (bandwidth, stress, coherency). Default is 'all'.\n"
-	      << "  -m,  --memory   <>     Specifies the amount of memory used for each test in bytes.\n"
+	      << "  -m,  --memory   <>     Specifies the amount of memory used for each test in bytes (Only used by bandwidth test).\n"
 	      << "  -c,  --check           Specifies a bool variable if we need to check for miscompares or not. Default is 'False'.\n"
               << "  -t,  --time     <>     Specify the duration of the test in seconds. Default is '60'.\n"
               << "  -s,  --subtests <>     Subtests are defined seperately for each workload. Default we run 'all'.\n"
 	      << "  -v,  --verbose         Enables verbose. Default is set to `False`.\n"
 	      << "  --exit_on_miscompare   Exits test in case of a miscompare. Only available with --check.\n"
-	      << "  --hostpinnedmemory     Allocates pinned host memory, which is mapped to GPU and can be used for more efficient data transfer between host and device.\n";
+	      << "  --hostpinnedmemory     Allocates pinned host memory, which is mapped to GPU and can be used for more efficient data transfer between host and device.\n"
+	      << "  --memory_percentage    Specifies the percentage of gpu memory to use 0-100 (Only used by stress test).\n";
 }
 
 

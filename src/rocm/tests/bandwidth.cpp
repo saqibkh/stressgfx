@@ -11,14 +11,10 @@
 #include "../globals.h"
 #include "../helper/arithmetic/add.h"  // Include the add.h file
 #include "../helper/arithmetic/subtract.h"
-
-// Function to convert bool to string "True" or "False"
-std::string boolToString(bool value) {
-    return value ? "True" : "False";
-}
+#include "../helper/others/boolToString.h"
 
 // Function to parse command-line arguments and store values in references
-void parseArguments(int argc, char* argv[], std::string& subtest, std::string& time, size_t& memory_size) {
+void parseBandwidthArguments(int argc, char* argv[], std::string& subtest, std::string& time, size_t& memory_size) {
 
     for (int i = 1; i < argc; ++i) {
         if ((strcmp(argv[i], "--time") == 0 || strcmp(argv[i], "-t") == 0) && i + 1 < argc) {
@@ -32,7 +28,7 @@ void parseArguments(int argc, char* argv[], std::string& subtest, std::string& t
 
     // Print out the values
     std::cout << "======================================================================\n";
-    std::cout << "=====================TEST CONFIGURATION===============================\n";
+    std::cout << "=====================TEST CONFIGURATION (BANDWIDTH)===================\n";
     std::cout << "======================================================================\n";
     std::cout << "Sub Test: " << subtest << std::endl;
     std::cout << "Time: " << time << " seconds" << std::endl;
@@ -56,7 +52,7 @@ int runBandwidthTest(int argc, char* argv[]) {
     size_t memory_size = 256 * 1024 * 1024; // We are targetting 10MB by default (1024 x 1024)
 
     // Parse user provided user arguments; and set default variables if not provided
-    parseArguments(argc, argv, subtest, time, memory_size);
+    parseBandwidthArguments(argc, argv, subtest, time, memory_size);
 
     // Convert string inputs to appropriate types
     int test_duration = std::stoi(time);
