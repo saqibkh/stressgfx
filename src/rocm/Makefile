@@ -11,7 +11,9 @@ TESTS_DIR = tests
 HELPER_DIR = helper
 ARITHMETIC_DIR = $(HELPER_DIR)/arithmetic
 MEMORYOPS_DIR  = $(HELPER_DIR)/memoryOps 
+STRESS_DIR     = $(HELPER_DIR)/stress
 OTHERS_DIR     = $(HELPER_DIR)/others
+
 
 # Source files
 SRC_FILES = $(SRC_DIR)/main.cpp \
@@ -20,12 +22,14 @@ SRC_FILES = $(SRC_DIR)/main.cpp \
 	    $(TESTS_DIR)/coherency.cpp \
 	    $(ARITHMETIC_DIR)/add.cpp \
 	    $(ARITHMETIC_DIR)/subtract.cpp \
+	    $(STRESS_DIR)/memoryStress.cpp \
 	    $(OTHERS_DIR)/getPhysicalAddress.cpp \
 	    $(OTHERS_DIR)/boolToString.cpp
 
 # Include directories
 INCLUDES = -I$(HOME)/helper/arithmetic \
 	   -I$(HOME)/helper/memoryOps \
+	   -I$(HOME)/helper/stress \
 	   -I$(HOME)/helper/others \
 	   -I$(HOME)/test
 

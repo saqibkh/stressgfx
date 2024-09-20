@@ -10,6 +10,7 @@
 #include "stress.h"
 #include "../globals.h"
 #include "../helper/others/boolToString.h"
+#include "../helper/stress/memoryStress.h"
 
 // Function to parse command-line arguments and store values in references
 void parseStressArguments(int argc, char* argv[], std::string& subtest, std::string& time, float& memory_percentage) {
@@ -81,17 +82,16 @@ int runStressTest(int argc, char* argv[]) {
     std::cout << "Allocated " << static_cast<float>(mem_size)/(1024*1024*1024) << " Gigabytes on the GPU, with " << num_elements << " elements." << std::endl;
 
     int total_tests = 1;
-    if (subtest == "random") {
-        //l_fail += call
-	std::cout << "This option is still under construction\n";
+    if (subtest == "memoryStress") {
+        l_fail += callMemoryStressKernel(d_data, mem_size, num_elements, test_duration);
     } else if (subtest == "TEST1") {
         std::cout << "This option is still under construction\n";
     } else if (subtest == "TEST2") {
         std::cout << "This option is still under construction\n";
     } else if (subtest == "TEST3") {
         std::cout << "This option is still under construction\n";
-    } else if (subtest == "TEST4") {
-        std::cout << "This option is still under construction\n";
+    } else if (subtest == "all") {
+	l_fail += callMemoryStressKernel(d_data, mem_size, num_elements, test_duration/total_tests);
     }
 
     // Cleanup
