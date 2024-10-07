@@ -107,7 +107,7 @@ int runBandwidthTest(int argc, char* argv[]) {
     hipMemcpy(d_b, h_b, bytes, hipMemcpyHostToDevice);
     hipMemcpy(d_c, h_c, bytes, hipMemcpyHostToDevice);
 
-    int total_tests = 2;
+    int total_tests = 4;
     if (subtest == "add") {
         l_fail += callAddKernel(d_a, d_b, d_c, memory_size, test_duration);
     } else if (subtest == "subtract"){

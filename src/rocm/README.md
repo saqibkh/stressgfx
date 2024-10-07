@@ -1,17 +1,17 @@
 TESTS
 
 1) Bandwidth:
-	add
-	subtract
-	multiply
-	divide
-	matrix_multiply
+	a) add
+	b) subtract
+	c) multiply
+	d) divide
+	e) matrix_multiply
 
 2) Stress:
-	memoryStress: 
+	a) memoryStress: 
 		Writes to a memory location, and then reads it 4 times and compares the
 		result for mismatches. Implements a sequential access to memory
-	randomMemoryStress: 
+	b) randomMemoryStress: 
 		Random memory access stresses memory latency and cache performance, 
 		as GPUs are optimized for sequential accesses. The kernel generates
                 random memory indices for each thread to access and modify memory
@@ -24,7 +24,7 @@ __global__ void random_access_test(float* data, size_t size, int* indices) {
 }
 	
 
-	stridedMemoryAccess(Non-coalesced Memory Access): 
+	c) stridedMemoryAccess(Non-coalesced Memory Access): 
 		Strided access patterns force the GPU to access non-sequential memory locations, 
 		which reduces memory access efficiency and stresses the memory controller.
 		Set different stride values (e.g., 2, 4, 8, etc.) to simulate non-coalesced access
@@ -37,7 +37,7 @@ __global__ void strided_access_test(float* data, size_t size, int stride) {
     }
 }
 
-	sustainedMemoryWorkload (Looping Access to Simulate Heavy Workloads): 
+	d) sustainedMemoryWorkload (Looping Access to Simulate Heavy Workloads): 
 		Implement a kernel that continuously loops over memory reads and writes for a
 		fixed period, simulating a sustained heavy workload on the memory subsystem.
 __global__ void sustained_workload_kernel(float* data, size_t size, int iterations) {
