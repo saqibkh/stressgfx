@@ -134,9 +134,7 @@ int callMemoryStressKernel(int *d_data, size_t memory_size, size_t num_elements,
         total_data = static_cast<double>(iterations) * num_elements * (1+(4*2));
     }
     double bandwidth = total_data / elapsed_time / (1 << 30);
-    //std::cout << "Test Duration: " << testDuration << " seconds" << std::endl;
     std::cout << "Number of iterations: " << iterations << std::endl;
-    //std::cout << "Elapsed Time: " << elapsed_time << " seconds" << std::endl;
     std::cout << "Total Data Transferred: " << total_data / (1 << 30) << " GB" << std::endl;
     std::cout << "Bandwidth (stressMemory): " << bandwidth << " GB/s\n" << std::endl;
 
