@@ -11,6 +11,8 @@
 #include "../globals.h"
 #include "../helper/arithmetic/add.h"  // Include the add.h file
 #include "../helper/arithmetic/subtract.h"
+#include "../helper/arithmetic/multiply.h"
+#include "../helper/arithmetic/divide.h"
 #include "../helper/others/boolToString.h"
 
 // Function to parse command-line arguments and store values in references
@@ -111,9 +113,9 @@ int runBandwidthTest(int argc, char* argv[]) {
     } else if (subtest == "subtract"){
         l_fail += callSubtractKernel(d_a, d_b, d_c, memory_size, test_duration);
     } else if (subtest == "multiply"){
-	std::cout << "This option is still under construction\n";
+	l_fail += callMultiplyKernel(d_a, d_b, d_c, memory_size, test_duration);
     } else if (subtest == "divide"){
-	std::cout << "This option is still under construction\n";
+	l_fail += callDivideKernel(d_a, d_b, d_c, memory_size, test_duration);
     } else if (subtest == "read"){
 	std::cout << "This option is still under construction\n";
     } else if (subtest == "write"){
@@ -123,6 +125,8 @@ int runBandwidthTest(int argc, char* argv[]) {
     } else if (subtest == "all"){
         l_fail += callAddKernel(d_a, d_b, d_c, memory_size, test_duration/total_tests);
 	l_fail += callSubtractKernel(d_a, d_b, d_c, memory_size, test_duration/total_tests);
+	l_fail += callMultiplyKernel(d_a, d_b, d_c, memory_size, test_duration/total_tests);
+	l_fail += callDivideKernel(d_a, d_b, d_c, memory_size, test_duration/total_tests);
     }
 
     // Cleanup

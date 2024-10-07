@@ -22,6 +22,8 @@ SRC_FILES = $(SRC_DIR)/main.cpp \
 	    $(TESTS_DIR)/coherency.cpp \
 	    $(ARITHMETIC_DIR)/add.cpp \
 	    $(ARITHMETIC_DIR)/subtract.cpp \
+	    $(ARITHMETIC_DIR)/multiply.cpp \
+	    $(ARITHMETIC_DIR)/divide.cpp \
 	    $(STRESS_DIR)/memoryStress.cpp \
 	    $(OTHERS_DIR)/getPhysicalAddress.cpp \
 	    $(OTHERS_DIR)/boolToString.cpp
