@@ -24,7 +24,7 @@ __global__ void kernel_check(int* d_data, size_t num_elements, int* miscompareIn
     size_t idx = blockDim.x * blockIdx.x + threadIdx.x;
     if (idx < num_elements) {
         // Read and check for miscompares
-        if (d_data[idx] != idx) {
+        if ((size_t)d_data[idx] != idx) {
             *miscompareIndex = idx;  // Store index of the miscompare
 	    *actualValue = d_data[idx];
 	    *expectedValue = idx;
@@ -35,6 +35,9 @@ __global__ void kernel_check(int* d_data, size_t num_elements, int* miscompareIn
 int callMemoryStressKernel(int *d_data, size_t memory_size, size_t num_elements, int testDuration) {
 
     std::cout << "============= TEST RESULTS FOR MEMORY_STRESS =============" << std::endl;
+
+    // This is the variable that will be used to store the number of iterations
+    int iterations = 0;
 
     // This variable will store the fail count
     int l_fail = 0;
@@ -59,11 +62,14 @@ int callMemoryStressKernel(int *d_data, size_t memory_size, size_t num_elements,
     // Launch kernel to write data to GPU memory once
     size_t blockSize = 256;
     size_t gridSize = (num_elements + blockSize - 1) / blockSize;
-    hipLaunchKernelGGL(kernel_test, dim3(gridSize), dim3(blockSize), 0, 0, d_data, num_elements);
-    hipDeviceSynchronize();
 
     // Run loop until test duration is completed
     while (true) {
+
+	// Write to device once
+	hipLaunchKernelGGL(kernel_test, dim3(gridSize), dim3(blockSize), 0, 0, d_data, num_elements);
+        hipDeviceSynchronize();
+
         // Check 4 times
         for (int i = 0; i < 4; i++) {
             // Reset miscompare variable
@@ -110,7 +116,31 @@ int callMemoryStressKernel(int *d_data, size_t memory_size, size_t num_elements,
             std::cout << "Test time (" << testDuration << " seconds) has been reached." << std::endl;
             break;
         }
+
+	iterations += 1;
     }
+
+    // Calculate the total bandwidth
+    auto end_time = std::chrono::high_resolution_clock::now();
+    double elapsed_time = std::chrono::duration<double>(end_time - start_time).count();
+    double total_data;
+    if(CHECK_RESULT == true){
+        // 1 arrays being written, 4 times being read
+	// The read needs to be multiplied by 2 as we are doing the same when checking results
+        total_data = static_cast<double>(iterations) * num_elements * (1+(4*2));
+    } else {
+	// Same as above
+        // 1 arrays being written, 4 times being read
+        total_data = static_cast<double>(iterations) * num_elements * (1+(4*2));
+    }
+    double bandwidth = total_data / elapsed_time / (1 << 30);
+    //std::cout << "Test Duration: " << testDuration << " seconds" << std::endl;
+    std::cout << "Number of iterations: " << iterations << std::endl;
+    //std::cout << "Elapsed Time: " << elapsed_time << " seconds" << std::endl;
+    std::cout << "Total Data Transferred: " << total_data / (1 << 30) << " GB" << std::endl;
+    std::cout << "Bandwidth (stressMemory): " << bandwidth << " GB/s\n" << std::endl;
+
+
 
     // Clean up
     hipFree(d_miscompare);
